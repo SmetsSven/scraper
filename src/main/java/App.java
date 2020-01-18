@@ -55,6 +55,8 @@ public class App {
         List<String> videos = new ArrayList<>();
         for(Element repository : repositories ){
             String hyperLink = "https://www.youtube.com/" + repository.attr("href");
+//            String hyperLink = "https://www.youtube.com/watch?v=pYTjCwFDtAo&t";
+
             String urlLink = repository.text();
             Document videoDoc = Jsoup.connect(hyperLink).get();
             Elements date = videoDoc.select("script");
@@ -67,8 +69,10 @@ public class App {
                 String link = "=HYPERLINK(\"" + hyperLink + "\";\"" +  urlLink  + "\")" + "\n";
                 videos.add(link);
             }else if (!dateString.equals("")){
-                int videoDate = Integer.parseInt(dateString.substring(4,6));
-                int yesterDate = Integer.parseInt(yesterday.substring(4,6));
+                String videoDateString = (dateString.split(" ")[1]);
+                int videoDate =  Integer.parseInt(videoDateString.substring(0, videoDateString.length() - 1));
+                String yesterDateString = (yesterday.split(" ")[1]);
+                int yesterDate =  Integer.parseInt(yesterDateString.substring(0, yesterDateString.length() - 1));
                 if(videoDate<yesterDate){
                     return videos;
                 }
@@ -80,9 +84,14 @@ public class App {
     private static String getVideoDate(Element element) {
         Pattern pattern = Pattern.compile("dateText[^}]*");
         Matcher matcher = pattern.matcher(element.data());
+        String stream = "Streamed";
         if (matcher.find()) {
             try{
-                return matcher.group().split("\"")[4].substring(13, 25);
+                if ( matcher.group().toLowerCase().contains(stream.toLowerCase()) ) {
+                    return matcher.group().split("\"")[4].substring(17, 28);
+                }else{
+                    return matcher.group().split("\"")[4].substring(13, 25);
+                }
             }
             catch(StringIndexOutOfBoundsException e){
                 return matcher.group().split("\"")[4];
